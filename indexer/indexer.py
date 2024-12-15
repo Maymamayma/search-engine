@@ -1,6 +1,6 @@
 import os
 import json
-from indexer.tokenizer import tokenize
+from .tokenizer import tokenize
 from bs4 import BeautifulSoup
 import logging
 import logging.config
@@ -23,6 +23,7 @@ class Indexer:
         logger.info("Indexing completed.")
         for file_name in os.listdir(self.data_dir):
             file_path = os.path.join(self.data_dir, file_name)
+            logger.info(f"Processing file: {file_name}")  # Log the file being processed
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read()
                 soup = BeautifulSoup(content, 'html.parser')
@@ -37,13 +38,17 @@ class Indexer:
                         self.index[token]["documents"][file_name] = 0
                     self.index[token]["documents"][file_name] += 1
 
+                    logger.debug(f"Indexed token: {token} in {file_name}")  # Log each token processed
+
         self.save_index()
 
     def save_index(self):
         os.makedirs(self.index_dir, exist_ok=True)
         index_path = os.path.join(self.index_dir, "index.json")
+        logger.info(f"Saving index to {index_path}")  # Log where the index is being saved
         with open(index_path, 'w', encoding='utf-8') as f:
             json.dump(self.index, f)
+        logger.info("Index saved successfully.")
 
 # Example usage:
 if __name__ == "__main__":

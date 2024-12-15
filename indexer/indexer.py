@@ -11,34 +11,38 @@ logging.config.fileConfig('config/logging.conf')
 logger = logging.getLogger(__name__)
 
 class Indexer:
-    def __init__(self, data_dir, index_dir):
-        self.data_dir = data_dir
+    def __init__(self, crawled_file, index_dir):
+        self.crawled_file = crawled_file  # Path to the crawled results JSON file
         self.index_dir = index_dir
         self.index = {}
         logger.info("Indexer initialized.")
 
     def build_index(self):
-        logger.info(f"Building index from directory: {self.data_dir}")
-        # Indexing logic here
-        logger.info("Indexing completed.")
-        for file_name in os.listdir(self.data_dir):
-            file_path = os.path.join(self.data_dir, file_name)
-            logger.info(f"Processing file: {file_name}")  # Log the file being processed
-            with open(file_path, 'r', encoding='utf-8') as f:
-                content = f.read()
-                soup = BeautifulSoup(content, 'html.parser')
-                title = soup.title.string if soup.title else "No Title"
-                tokens = tokenize(soup.get_text())
-                
-                for token in tokens:
-                    if token not in self.index:
-                        self.index[token] = {"count": 0, "documents": {}}
-                    self.index[token]["count"] += 1
-                    if file_name not in self.index[token]["documents"]:
-                        self.index[token]["documents"][file_name] = 0
-                    self.index[token]["documents"][file_name] += 1
+        logger.info(f"Building index from file: {self.crawled_file}")
+        
+        # Load the crawled results from the JSON file
+        with open(self.crawled_file, 'r', encoding='utf-8') as f:
+            crawled_data = json.load(f)
 
-                    logger.debug(f"Indexed token: {token} in {file_name}")  # Log each token processed
+        # Indexing logic
+        for page in crawled_data:
+            url = page['url']
+            html_content = page['html_content']
+
+            logger.info(f"Processing page: {url}")  # Log the URL being processed
+
+            # Tokenize the page content
+            tokens = tokenize(html_content)
+                
+            for token in tokens:
+                if token not in self.index:
+                    self.index[token] = {"count": 0, "documents": {}}
+                self.index[token]["count"] += 1
+                if url not in self.index[token]["documents"]:
+                    self.index[token]["documents"][url] = 0
+                self.index[token]["documents"][url] += 1
+
+                logger.debug(f"Indexed token: {token} in {url}")  # Log each token processed
 
         self.save_index()
 
@@ -47,10 +51,11 @@ class Indexer:
         index_path = os.path.join(self.index_dir, "index.json")
         logger.info(f"Saving index to {index_path}")  # Log where the index is being saved
         with open(index_path, 'w', encoding='utf-8') as f:
-            json.dump(self.index, f)
+            json.dump(self.index, f, ensure_ascii=False, indent=4)
         logger.info("Index saved successfully.")
 
 # Example usage:
 if __name__ == "__main__":
-    indexer = Indexer("data/raw", "data/index")
+    # Specify the path to the crawled results and the directory to save the index
+    indexer = Indexer("crawled_results.json", "data/index")
     indexer.build_index()

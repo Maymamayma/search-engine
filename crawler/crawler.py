@@ -13,13 +13,14 @@ logging.config.fileConfig('config/logging.conf')
 logger = logging.getLogger(__name__)
 
 class WebCrawler:
-    def __init__(self, start_url, max_pages=50):
+    def __init__(self, start_url, max_pages=50, crawled_file='crawled_results.json'):
         self.start_url = start_url
         self.max_pages = max_pages
         self.visited = set()
         self.queue = deque([start_url])
         self.results = []
         self.hashes = set()
+        self.crawled_file = crawled_file
         logger.info("WebCrawler initialized.")
     
     # Ensure no duplicate content is processed
@@ -49,13 +50,14 @@ class WebCrawler:
 
             self.visited.add(current_url)
             self.results.append((current_url, html))
+
+            # Save the crawled page for indexing
+            self.save_results_to_json()
+
             links = self.extract_links(html, current_url)
             self.queue.extend(link for link in links if link not in self.visited and link not in self.queue)
 
         logger.info(f"Crawl completed. {len(self.visited)} pages visited.")
-        
-        # Save results to a JSON file
-        self.save_results_to_json()
 
     # Fetch a web page
     def fetch_page(self, url):
@@ -77,23 +79,24 @@ class WebCrawler:
             if is_allowed(full_url) and full_url not in self.visited:
                 links.add(full_url)
         return links
-    
-    def save_results_to_json(self, filename="crawled_results.json"):
+
+    # Save results to a JSON file
+    def save_results_to_json(self):
         """
         Save the crawled results in a structured JSON format.
         Each result includes the URL and the HTML content.
         """
         data = [{"url": url, "html_content": html} for url, html in self.results]
         try:
-            with open(filename, "w", encoding="utf-8") as f:
+            with open(self.crawled_file, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=4, ensure_ascii=False)
-            logger.info(f"Results saved to {filename}")
+            logger.info(f"Results saved to {self.crawled_file}")
         except IOError as e:
-            logger.error(f"Error saving results to {filename}: {e}")
+            logger.error(f"Error saving results to {self.crawled_file}: {e}")
 
 # Example usage:
 if __name__ == "__main__":
-    crawler = WebCrawler("https://example.com", max_pages=5)
+    crawler = WebCrawler("https://example.com", max_pages=5, crawled_file="crawled_results.json")
     crawler.crawl()
 
     print("Crawling completed. Results saved to 'crawled_results.json'.")

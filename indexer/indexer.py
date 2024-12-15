@@ -59,3 +59,4 @@ if __name__ == "__main__":
     # Specify the path to the crawled results and the directory to save the index
     indexer = Indexer("crawled_results.json", "data/index")
     indexer.build_index()
+    print("Indexing completed and saved.")

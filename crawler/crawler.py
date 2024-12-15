@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 from collections import deque
 import logging
-from crawler.robots_handler import is_allowed
+from .robots_handler import is_allowed
 import hashlib
 import logging
 import logging.config

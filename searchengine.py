@@ -1,6 +1,6 @@
 import os
 import json
-from .tokenizer import tokenize
+from indexer.tokenizer import tokenize
 import logging
 import logging.config
 

@@ -13,9 +13,9 @@
     {% if results %}
         <h2>Results:</h2>
         <ul>
-            {% for result in results %}
-                <li><a href="{{ result[0] }}" target="_blank">{{ result[0] }}</a> (Score: {{ result[1] }})</li>
-            {% endfor %}
+        {% for result in results %}
+            <li><a href="{{ result.document }}">{{ result.document }}</a> (Score: {{ result.score }})</li>
+        {% endfor %}
         </ul>
     {% elif query %}
         <p>No results found for "{{ query }}"</p>

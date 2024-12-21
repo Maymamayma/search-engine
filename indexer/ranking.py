@@ -47,13 +47,14 @@ def fetch_content(doc):
     else:
         raise ValueError(f"Invalid document path or URL: {doc}")
 
-def rank_documents(query, results):
+def rank_documents(query, results, index):
     """
-    Rank documents based on TF-IDF or other ranking metrics.
+    Rank documents based on TF-IDF or other ranking metrics, incorporating the index.
 
     Args:
     - query (str): The search query.
     - results (dict): Documents and their corresponding term occurrence counts.
+    - index (dict): The inverted index used for searching.
 
     Returns:
     - list: Ranked list of documents with scores.
@@ -71,9 +72,18 @@ def rank_documents(query, results):
         doc_score = 0
         for term in query_terms:
             tf = calculate_tf(term, document_content)
-            # Include IDF calculation if implemented
-            doc_score += tf  # You can add IDF here for TF-IDF
+
+            # Optionally use the index for inverse document frequency (IDF)
+            if term in index:
+                idf = calculate_idf(term, index)  # You can implement this method
+            else:
+                idf = 1  # If term is not in the index, default IDF to 1
+
+            # Calculate TF-IDF score for the term
+            doc_score += tf * idf  # TF-IDF score
 
         ranked_results.append((doc, doc_score))
-
+    # Debug: Print the ranked results before sorting
+    print(f"Ranked results (before sorting): {ranked_results}")
+    # Sort the documents by their scores in descending order
     return sorted(ranked_results, key=lambda x: x[1], reverse=True)

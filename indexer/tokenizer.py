@@ -1,10 +1,15 @@
 import re
 
 def tokenize(text):
-    # Convert to lowercase
-    text = text.lower()
-    # Remove punctuation and non-alphanumeric characters
-    text = re.sub(r'[^a-z0-9\s]', '', text)
-    # Split into words
-    tokens = text.split()
-    return tokens
+    """
+    Tokenize a string into terms.
+    
+    Args:
+    - text (str): Input text.
+    
+    Returns:
+    - list: List of terms (words).
+    """
+    # Remove non-alphanumeric characters and split into words
+    words = re.findall(r'\b\w+\b', text.lower())
+    return words

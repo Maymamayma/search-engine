@@ -5,7 +5,10 @@ from bs4 import BeautifulSoup
 import logging
 import logging.config
 import sys  # Required for consoleHandler's arguments
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from indexer.tokenizer import tokenize
 
+#from tokenizer import tokenize
 # Load logging configuration
 logging.config.fileConfig('config/logging.conf')
 logger = logging.getLogger(__name__)
@@ -16,6 +19,19 @@ class Indexer:
         self.index_dir = index_dir
         self.index = {}
         logger.info("Indexer initialized.")
+
+    def clean_html(html_content):
+        """
+        Extract text content from HTML while removing tags.
+        
+        Args:
+        - html_content (str): Raw HTML content.
+        
+        Returns:
+        - str: Cleaned text content.
+        """
+        soup = BeautifulSoup(html_content, 'html.parser')
+        return soup.get_text(separator=' ', strip=True)
 
     def build_index(self):
         logger.info(f"Building index from file: {self.crawled_file}")

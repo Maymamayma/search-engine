@@ -3,22 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <title>Search Engine</title>
+    <style>
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .page-item {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            cursor: pointer;
+        }
+        .active {
+            background-color: #007bff;
+            color: white;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            width: 80%;
+            margin: 50px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        form {
+            margin-bottom: 20px;
+            border: #f4f4f9;
+        }
+
+        input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        .button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background: #007BFF;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background: #0056b3;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin: 10px 0;
+        }
+
+        a {
+            text-decoration: none;
+            color: #007BFF;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+        .form1{
+            padding-left: 150px;
+        }
+        .logo{
+            margin-left: 600px;
+            margin-top: 60px;
+        }
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
 </head>
 <body>
-    <h1>Search Engine</h1>
+<img class="logo" width="200px" height="115px" src="../static/logo.png">
+<br>
+<br>
+<br>
+<br>
+<br>
+<div class="form1">
     <form action="/search_ui" method="get">
         <input type="text" name="q" value="{{ query }}" placeholder="Enter your query">
-        <button type="submit">Search</button>
+        <button type="submit" class="button">Search</button>
     </form>
+
     {% if results %}
         <h2>Results:</h2>
         <ul>
-        {% for result in results %}
-            <li><a href="{{ result.document }}">{{ result.document }}</a> (Score: {{ result.score }})</li>
-        {% endfor %}
+            {% for result in results %}
+                <li><a href="{{ result.document }}">{{ result.document }}</a></li>
+            {% endfor %}
         </ul>
+
+        <p>Total Results: {{ total_results }}</p>
+
+
     {% elif query %}
         <p>No results found for "{{ query }}"</p>
     {% endif %}
+</div>
 </body>
 </html>

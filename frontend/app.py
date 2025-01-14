@@ -11,16 +11,18 @@ from indexer.ranking import rank_documents
 
 # Initialize Flask app and API
 app = Flask(__name__)
-api = Api(app)
+#used to be: api = Api(app)
+api = Api(app, doc='/docs')
 
 # Ensure crawling and indexing happens by calling run.py
 def run_crawling_and_indexing():
-    index_path = "data/index/index.json"
+    #used to be : index_path = "data/index/index.json"
+    index_path = "../data/index/index.json"
     if not os.path.exists(index_path):
         print("Index file not found. Starting crawling and indexing via run.py...")
         try:
             subprocess.run(
-                [sys.executable, "run.py"],  # Runs run.py using the same Python interpreter
+                [sys.executable, "../run.py"],  # Runs run.py using the same Python interpreter
                 check=True,
             )
             print("Crawling and indexing completed.")
@@ -36,19 +38,17 @@ run_crawling_and_indexing()
 @api.route('/search')
 class SearchAPI(Resource):
     def get(self):
-        """
-        API Endpoint to handle search queries via HTTP GET requests.
-        """
         query = request.args.get('q', '').strip().lower()
-        if not query:
-            return {"error": "Query parameter 'q' is required."}, 400
 
         # Load the index
         try:
-            with open('data/index/index.json', 'r', encoding='utf-8') as f:
+            with open('../data/index/index.json', 'r', encoding='utf-8') as f:
                 index = json.load(f)
         except FileNotFoundError:
-            return {"error": "Index file not found. Please rebuild the index."}, 500
+            return render_template('search.html',
+                                   query=query,
+                                   results=[],
+                                   error="Index file not found. Please rebuild the index.")
 
         # Process the query
         results = {}
@@ -67,21 +67,22 @@ class SearchAPI(Resource):
         end = start + page_size
         paginated_results = ranked_results[start:end]
 
+        # Pass the ranked results and scores to the template
         response = [{"document": doc, "score": score} for doc, score in paginated_results]
-        return {
-            "query": query,
-            "results": response,
-            "total_results": len(ranked_results),
-            "page": page,
-            "page_size": page_size
-        }
+
+        return render_template('search.html',
+                               query=query,
+                               results=response,
+                               total_results=len(ranked_results),
+                               page=page,
+                               page_size=page_size)
 
 @app.route('/')
 def home():
     """
     Render the home page with the search UI.
     """
-    return render_template('home.html')  # Ensure `home.html` exists in `frontend/templates`
+    return render_template('home.html')
 
 @app.route('/search_ui', methods=['GET'])
 def search_ui():
@@ -89,30 +90,36 @@ def search_ui():
     Render the search results page for user queries.
     """
     query = request.args.get('q', '').strip()
-    if query:
-        # Load the index
-        try:
-            with open('data/index/index.json', 'r', encoding='utf-8') as f:
-                index = json.load(f)
-        except FileNotFoundError:
-            return render_template('search.html', query=query, results=[], error="Index file not found. Please rebuild the index.")
 
-        # Process and rank results
-        results = {}
-        for term in query.lower().split():
-            if term in index:
-                for doc, count in index[term]["documents"].items():
-                    results[doc] = results.get(doc, 0) + count
+    # Load the index
+    try:
+        with open('../data/index/index.json', 'r', encoding='utf-8') as f:
+            index = json.load(f)
+    except FileNotFoundError:
+        return render_template('search.html',
+                               query=query,
+                               results=[],
+                               error="Index file not found. Please rebuild the index.")
 
-        ranked_results = rank_documents(query, results, index)
-        print(f"Ranked Results: {ranked_results}")  # Debug: Check ranked results
-        
-        # Pass the ranked results and scores to the template
-        response = [{"document": doc, "score": score} for doc, score in ranked_results]
-        return render_template('search.html', query=query, results=response)
+    # Process and rank results
+    results = {}
+    for term in query.lower().split():
+        if term in index:
+            for doc, count in index[term]["documents"].items():
+                results[doc] = results.get(doc, 0) + count
 
-    # Render an empty search UI if no query
-    return render_template('search.html', query=query, results=[])
+    ranked_results = rank_documents(query, results, index)
+    print(f"Ranked Results: {ranked_results}")  # Debug: Check ranked results
+
+    # Pass the ranked results and scores to the template
+    response = [{"document": doc, "score": score} for doc, score in ranked_results]
+
+    return render_template('search.html',
+                           query=query,
+                           results=response,
+                           total_results=len(ranked_results),
+                           page=1,  # Set initial page to 1
+                           page_size=10)  # Set initial page size to 10
 
 if __name__ == "__main__":
     app.run(debug=True)

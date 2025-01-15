@@ -12,7 +12,7 @@ from indexer.ranking import rank_documents
 # Initialize Flask app and API
 app = Flask(__name__)
 #used to be: api = Api(app)
-api = Api(app, doc='/docs')
+api = Api(app, prefix="/api", doc="/api/docs")
 
 # Ensure crawling and indexing happens by calling run.py
 def run_crawling_and_indexing():
@@ -77,19 +77,18 @@ class SearchAPI(Resource):
                                page=page,
                                page_size=page_size)
 
-@app.route('/')
-def home():
-    """
-    Render the home page with the search UI.
-    """
-    return render_template('home.html')
 
-@app.route('/search_ui', methods=['GET'])
+
+@app.route('/')
 def search_ui():
     """
     Render the search results page for user queries.
     """
     query = request.args.get('q', '').strip()
+
+    if query == '':
+        return render_template('search.html', query='', results=[], total_results=0, refreshed=True)
+
 
     # Load the index
     try:
@@ -118,8 +117,7 @@ def search_ui():
                            query=query,
                            results=response,
                            total_results=len(ranked_results),
-                           page=1,  # Set initial page to 1
-                           page_size=10)  # Set initial page size to 10
+                           refreshed=False)  # Set initial page size to 10
 
 if __name__ == "__main__":
     app.run(debug=True)

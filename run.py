@@ -11,7 +11,7 @@ def ensure_directories():
 def run_crawling_and_indexing():
     # Step 1: Crawl web pages
     print("Starting the web crawler...")
-    start_url = "https://example.com"
+    start_url = "https://fr.wikipedia.org/"
     crawler = WebCrawler(start_url, max_pages=5)
     crawler.crawl()
     print("Crawl finished.")

@@ -93,29 +93,24 @@
 </head>
 <body>
 <img class="logo" width="200px" height="115px" src="../static/logo.png">
-<br>
-<br>
-<br>
-<br>
-<br>
+<br><br><br><br><br>
 <div class="form1">
-    <form action="/search_ui" method="get">
-        <input type="text" name="q" value="{{ query }}" placeholder="Enter your query">
+    <!-- Form for search query -->
+    <form action="/" method="get">
+        <input type="text" name="q" value="{{ query or '' }}" placeholder="Enter your query">
         <button type="submit" class="button">Search</button>
     </form>
 
-    {% if results %}
+    <!-- Display results if they exist -->
+    {% if not refreshed and query %}
         <h2>Results:</h2>
         <ul>
             {% for result in results %}
                 <li><a href="{{ result.document }}">{{ result.document }}</a></li>
             {% endfor %}
         </ul>
-
         <p>Total Results: {{ total_results }}</p>
-
-
-    {% elif query %}
+    {% elif not refreshed and query %}
         <p>No results found for "{{ query }}"</p>
     {% endif %}
 </div>
